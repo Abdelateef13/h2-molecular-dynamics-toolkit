@@ -1,0 +1,16 @@
+{
+  "model": "Illustrative single-site LJ H2 centers (NOT quantitatively validated H2)",
+  "n_molecules": 108,
+  "n_frames": 301,
+  "box_length": 6.757487282661637,
+  "length_unit": "sigma",
+  "time_unit": "tau",
+  "frame_dt": 0.04,
+  "number_density_per_length3": 0.35000000000000003,
+  "diffusion_coefficient_length2_per_time": 0.7056993553538566,
+  "diffusion_fit_r_squared": 0.9999029188315487,
+  "diffusion_fit_start_time": 1.6,
+  "diffusion_fit_end_time": 3.4,
+  "warning": "A linear MSD fit alone does not establish a diffusive regime or convergence. Inspect the chosen fit window, trajectory length, and independent runs.",
+  "relative_total_energy_change": -0.00023531656876010898
+}
