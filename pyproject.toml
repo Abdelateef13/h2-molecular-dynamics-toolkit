@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "h2-md-toolkit"
-version = "0.1.0"
-description = "Educational H2-only Lennard-Jones MD and molecular-center trajectory analysis"
+version = "0.2.0"
+description = "Educational molecular H2 dynamics: coarse-grained and two-atom flexible dimer models"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [{name = "Abdelateef M. Adam"}]
-dependencies = ["numpy>=1.24", "matplotlib>=3.7"]
+dependencies = ["numpy>=1.24", "matplotlib>=3.7", "plotly>=5.17"]
 keywords = ["molecular-dynamics", "hydrogen", "diffusion", "radial-distribution-function", "scientific-python"]
 
 [project.optional-dependencies]

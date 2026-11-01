@@ -1,0 +1,20 @@
+{
+  "model": "Two explicit H atoms per H2, harmonic H-H bonds, intermolecular site LJ; ILLUSTRATIVE unvalidated reduced-unit potential",
+  "n_molecules": 32,
+  "n_frames": 251,
+  "box_length": 5.108729549290354,
+  "length_unit": "sigma",
+  "time_unit": "tau",
+  "frame_dt": 0.008,
+  "number_density_per_length3": 0.24000000000000005,
+  "diffusion_coefficient_length2_per_time": 0.29829516197869493,
+  "diffusion_fit_r_squared": 0.9982973031587985,
+  "diffusion_fit_start_time": 0.272,
+  "diffusion_fit_end_time": 0.56,
+  "warning": "A linear MSD fit alone does not establish a diffusive regime or convergence. Inspect the chosen fit window, trajectory length, and independent runs.",
+  "relative_total_energy_change": -0.0002308825053652979,
+  "n_hydrogen_atoms": 64,
+  "mean_bond_length_sigma": 0.3021218577603783,
+  "bond_length_std_sigma": 0.027591286241754883,
+  "atomic_forcefield_warning": "This demo is not a validated H2 force field. Classical flexible H2 bonds do not reproduce quantum vibrations; diffusion values are illustrative. Molecular self-diffusion is calculated from UNWRAPPED H2 centers of mass, not H atom positions."
+}

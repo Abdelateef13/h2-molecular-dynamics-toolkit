@@ -1,157 +1,174 @@
 # H₂ Molecular Dynamics Toolkit
 
-**A runnable, Python-first project for simulating and analyzing a simple system containing only H₂ molecular centers.**
+[![Python tests](https://github.com/Abdelateef13/h2-molecular-dynamics-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/Abdelateef13/h2-molecular-dynamics-toolkit/actions/workflows/tests.yml)
 
-This portfolio project demonstrates the complete workflow: **build a periodic simulation → run molecular dynamics → analyze diffusion and structure → produce reproducible figures and CSV results**.
+**Python molecular-dynamics simulation and analysis for hydrogen**, including an explicit **two-hydrogen-atom-per-H₂** simulation, molecular diffusion analysis, H₂–H₂ radial distribution functions, 3D visualization, and import of two-atom H₂ LAMMPS dumps.
 
-![MSD and RDF plots from the included educational simulation](assets/h2_analysis.png)
+![Actual 3D snapshot from atomistic demo](assets/h2_atomistic_3d.png)
 
-![108 coarse-grained hydrogen molecular centers in a cubic periodic box](assets/h2_configuration.png)
+### Scientific scope — important
 
-> **Scientific scope:** The built-in MD engine uses a **single Lennard–Jones site per H₂ molecule**, with illustrative *reduced* units. It represents H₂ **centers of mass**, not two bonded H atoms, and uses **no calibrated real-hydrogen force field**. **Do not interpret the demo diffusion values, density, or temperature as quantitatively predictive for hydrogen.** The analysis functions also support actual H₂-center trajectories exported from LAMMPS, with physical units.
+There are two different educational models in this repository:
 
-## Features
+- **v0.2, `atomistic-demo`:** Two separately integrated H atoms per molecule, flexible **harmonic H–H bond**, **intermolecular** H-site Lennard–Jones interactions, 3D periodic box, velocity-Verlet time integration. Each H has mass `0.5` in reduced units. **This is atom-resolved but not a validated physical H₂ force field.** No H₂ dissociation, quantum nuclear vibrations, or accurate thermodynamic-state predictions are supported.
+- **v0.1, `demo`:** The original simplified single-site Lennard–Jones model in which each particle is an entire H₂ center of mass. Retained for comparison and teaching.
 
-- Self-contained, small **velocity-Verlet** MD with periodic boundaries, minimum-image distances, shifted-force LJ interactions, NVE production, and basic equilibration.
-- **Mean-squared displacement (MSD)** with multiple time origins, computed using **unwrapped** molecule-center coordinates.
-- **Self-diffusion coefficient** from the long-time Einstein relationship, `D = slope(MSD) / 6` in 3D.
-- **H₂–H₂ radial distribution function**, `g(r)`, with correct pair-count and spherical-shell normalization.
-- Number density; mass-density conversion for trajectories with Å units.
-- Reproducible `.npz` trajectory storage, CSV exports, JSON metrics, and publication-friendly PNG charts.
-- Loader for *cubic, constant-volume orthorhombic* LAMMPS `dump custom` with **unwrapped** `xu yu zu`, or `x y z ix iy iz` columns.
-- Unit tests, command-line interface, and GitHub Actions continuous integration.
+**Do not report either demonstration's diffusion coefficients as physical H₂ transport coefficients.** Both built-in models use arbitrary reduced-unit parameters, not calibrated experimental or ab initio potentials. For quantitative results, analyze a validated hydrogen model and documented thermodynamic conditions (temperature, pressure, density) and establish convergence.
 
-## Installation
+## New in v0.2
 
-Requires **Python 3.10+**. Clone/download this repository, open a terminal in its root, and run:
+- Explicit **H₂ = H—H** molecular topology (32 molecules = 64 H atoms by default).
+- Harmonic intramolecular H–H bonding; no LJ interaction between the two atoms of the same molecule.
+- Periodic-boundary handling that preserves intact bonded molecules for visualization.
+- Interactive, **offline Plotly 3D HTML animation** (rotate, zoom, play/pause and scrub frames).
+- Static 3D molecular snapshot, H–H bond-length distribution and time series.
+- Molecular **COM** trajectory for MSD, self-diffusion, RDF, and density analysis.
+- Trajectories saved in atomic `.npz`, molecular-center `.npz`, and OVITO-compatible `.xyz` formats.
+- Import of **LAMMPS `dump custom` with `id mol xu yu zu`** for two-atom hydrogen molecules (constant cubic box, `units real`).
+- 11 automated Python tests and GitHub Actions CI.
 
-```bash
-python -m venv .venv
-# Windows PowerShell:
-.venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
+## Example output
+
+| Atomistic 3D H₂ molecules | Bond-length analysis |
+|:--:|:--:|
+| ![3D hydrogen molecules](assets/h2_atomistic_3d.png) | ![Bond statistics](assets/h2_bonds.png) |
+
+| Molecular MSD & RDF | Energy & temperature diagnostics |
+|:--:|:--:|
+| ![MSD RDF analysis](assets/h2_atomistic_analysis.png) | ![Energy traces](assets/h2_atomistic_diagnostics.png) |
+
+**[Open/download the interactive H₂ trajectory (HTML)](examples/atomistic-demo/h2_interactive.html)** — Download the file and open it in Chrome/Edge. It includes the visualization engine, so you can run it offline. The browser viewer shows atoms and bonds from the **actual computed trajectory** rather than an artistic illustration.
+
+## Quickstart (Windows)
+
+Requirements: Python 3.10+ and a terminal. In the project folder:
+
+```cmd
+py -m venv .venv
+.venv\Scripts\activate.bat
 python -m pip install -e ".[dev]"
 ```
 
-## Run your first H₂-only simulation
+Run the new **explicit two-atom H₂ simulation**:
 
-```bash
-h2md demo --output results
+```cmd
+h2md atomistic-demo --output results/atomistic
 ```
 
-The demo uses an FCC starting arrangement of **108 H₂ centers**, periodic cubic cell, reduced number density **ρ*=0.35**, reduced target temperature **T*=2.0**, velocity rescaling during **500 equilibration steps**, and **3,000 NVE production steps** (`dt*=0.004`), saving every 10 steps. Random seed: 42.
+Open `results/atomistic/h2_interactive.html` by double-clicking it. Use the **Play** button, drag to rotate the box, scroll to zoom, or click the slider to inspect a frame.
 
-Files created in `results/`:
+Test the project:
 
-| File | Contents |
-|---|---|
-| `trajectory.npz` | Unwrapped molecular-center coordinates, box and time metadata, thermodynamic traces |
-| `h2_analysis.png` | MSD with linear fit and H₂–H₂ RDF |
-| `h2_diagnostics.png` | NVE energy components and instantaneous temperature |
-| `msd.csv` / `rdf.csv` | Numerical results for reuse |
-| `results.json` | Parameters, fitted coefficient, R², density, units and scientific warning |
-
-![Production diagnostics](assets/h2_diagnostics.png)
-
-An example run (including trajectory data, CSVs, and JSON) is committed in [`examples/demo-output/`](examples/demo-output/).
-
-Customize the demo:
-
-```bash
-h2md demo --steps 6000 --equil 1000 --seed 7 --output results/run2
-```
-
-## Analyze existing LAMMPS trajectories
-
-A real H₂-only LAMMPS simulation needs **one particle per molecular center** to match this version of the analysis. If your original simulation contains **two hydrogen atoms per H₂**, first compute each molecule's **unwrapped center of mass** and export those molecular centers; do not mistakenly interpret H-atom self-diffusion as H₂ molecular self-diffusion.
-
-Use `units real` (coordinates Å and MD timestep fs), a fixed **cubic** cell, and dump columns such as:
-
-```lammps
-# From a preconfigured, running LAMMPS H2-center simulation:
-dump d1 all custom 100 trajectory.lammpstrj id type xu yu zu
-```
-
-Then, for example, if LAMMPS integrates with `timestep 1.0` (fs):
-
-```bash
-h2md analyze --input trajectory.lammpstrj --timestep-fs 1.0 --output results/lammps
-```
-
-You may also load this tool's saved compressed trajectory:
-
-```bash
-h2md analyze --input results/trajectory.npz --output results/reanalysis
-```
-
-**Parser limitations:** v0.1 supports constant cubic orthorhombic cells, uniformly spaced frames and consistent particle IDs. It does **not** automatically convert atomic H positions to molecular centers, and does **not** handle triclinic or fluctuating NPT cells. For production research, implement/check robust unwrapping and center-of-mass reconstruction appropriate to the actual topology.
-
-## Scientific methods
-
-**Mean-squared displacement:**
-
-$$\mathrm{MSD}(\tau)=\left\langle \frac{1}{N}\sum_{i=1}^N\left|\mathbf r_i(t_0+\tau)-\mathbf r_i(t_0)\right|^2\right\rangle_{t_0}$$
-
-Positions **must be unwrapped** across periodic boundaries; directly using wrapped coordinates gives false jumps. Default analysis considers lags up to one third of the trajectory, to reduce noisy late-lag estimates.
-
-**Einstein self-diffusion (3D):**
-
-$$D=\frac{1}{6}\frac{d\,\mathrm{MSD}(\tau)}{d\tau}$$
-
-The default fit uses **40–85%** of the analyzed lag interval. This is a configurable *heuristic*, not proof of reaching a diffusive regime. Inspect the MSD, vary the fitting window, extend the simulation, assess convergence with independent runs, and consider uncertainties before making physical claims. To change the fit window:
-
-```bash
-h2md analyze --input results/trajectory.npz --fit-start 0.50 --fit-end 0.90
-```
-
-**Radial distribution function:** `g(r)` estimates the observed number of *unique* H₂-center pairs per spherical shell, divided by the expected shell count for a uniform fluid at the same number density and box volume. Minimum-image periodic distances are used for radii ≤ L/2.
-
-**Units:** The built-in MD reports `σ²/τ` (diffusion) and molecules per `σ³` (number density). These reduced quantities cannot be converted to SI without separately selecting and validating a physical parameterization. LAMMPS `units real` trajectories report diffusion in `Å²/fs`, also converted to `m²/s` using `1 Å²/fs = 10⁻⁵ m²/s`.
-
-## Use as a Python library
-
-```python
-from h2md import simulate_h2_centers, mean_squared_displacement, fit_self_diffusion, radial_distribution
-
-traj = simulate_h2_centers(production_steps=3000)
-times, msd = mean_squared_displacement(traj)
-fit = fit_self_diffusion(times, msd)
-r, g = radial_distribution(traj)
-print('Illustrative reduced-unit D:', fit.coefficient)
-```
-
-## Project structure
-
-```text
-h2-molecular-dynamics-toolkit/
-├── src/h2md/             # Simulation, trajectory I/O, analysis, plotting, CLI
-├── tests/                # MSD, diffusion, RDF, PBC, energy-conservation tests
-├── assets/               # Figures generated from the included demo
-├── .github/workflows/    # Automated Python tests
-├── pyproject.toml        # Installable package
-├── LICENSE
-└── README.md
-```
-
-## Quality checks
-
-```bash
+```cmd
 python -m pytest -q
 ```
 
-## Next milestones
+Expected: **11 passed**. To update an existing v0.1 GitHub repository, follow **[UPGRADE_WINDOWS.md](UPGRADE_WINDOWS.md)** instead of creating a new repository.
 
-1. Read fully atomistic, two-H-atom-per-molecule trajectories and compute true unwrapped H₂ center-of-mass positions.
-2. Support changing cell dimensions, triclinic PBC, and NPT trajectories.
-3. Estimate block-averaged confidence intervals and automate diffusion-regime diagnostics.
-4. Compare results with established packages such as MDAnalysis; add MSD FFT acceleration.
-5. Introduce validated H₂ force-field parameters and reference conditions (T, P, density), then compare with published data.
+### Outputs of `atomistic-demo`
+
+| Output | Meaning |
+| --- | --- |
+| `h2_interactive.html` | Self-contained interactive 3D atom/bond animation |
+| `h2_atomistic_3d.png` | Static 3D snapshot with H–H bonds |
+| `h2_bonds.png` | Bond lengths vs time and bond-length histogram |
+| `h2_analysis.png` | Molecular-center MSD, diffusion fit, and H₂–H₂ COM RDF |
+| `h2_diagnostics.png` | Potential and kinetic energy; temperature vs time |
+| `atomic_trajectory.npz` | Unwrapped **atomic** H positions, `(frames, molecules, 2, 3)` |
+| `com_trajectory.npz` | Unwrapped **molecular COM** coordinates, `(frames, molecules, 3)` |
+| `h2_molecules.xyz` | Animated extended XYZ trajectory, supported by OVITO |
+| `msd.csv`, `rdf.csv` | Calculated numerical arrays |
+| `results.json` | Parameters, bond statistics, density, fitted diffusion and warnings |
+
+Change number of steps, equilibration, and random seed:
+
+```cmd
+h2md atomistic-demo --equil 600 --steps 5000 --seed 7 --output results/longer-run
+```
+
+## Analyze actual two-atom H₂ trajectories from LAMMPS
+
+A molecular H₂ system should have **two hydrogen atoms per molecule**, with a stable `mol` ID per bonded pair. Write a *custom* dump in a production LAMMPS run:
+
+```lammps
+# Example output directive to add to an otherwise configured H2 LAMMPS input
+# units real => coordinates in Å; timestep in fs.
+dump d1 all custom 100 h2_atoms.lammpstrj id mol type xu yu zu
+dump_modify d1 sort id
+```
+
+Analyze if the MD timestep is **0.5 fs** (replace it with your actual value):
+
+```cmd
+h2md atomistic-analyze --input h2_atoms.lammpstrj --timestep-fs 0.5 --output results/from-lammps
+```
+
+This reconstructs molecular **unwrapped center-of-mass positions** and generates the same diffusion, RDF, and 3D visualization output. The example does **not** supply a validated LAMMPS H₂ force field or claim to generate publishable hydrogen MD simulations. It is an *analysis/import* workflow; use scientifically supported force-field parameters and equilibrated trajectories.
+
+Current importer limitations: **constant cubic orthorhombic box**, consistent atom and molecule IDs, two H atoms per molecule, and uniform frame spacing. **NPT, triclinic boxes, and different atomic species are not yet supported.** Keep atomic unwrapped image flags consistent with the molecular topology.
+
+## Explore XYZ with OVITO
+
+1. Download/install [OVITO Basic](https://www.ovito.org/).
+2. Use **File → Load File** to open `results/atomistic/h2_molecules.xyz`.
+3. Click Play to animate. The file contains two `H` atoms and a molecule identifier for each H₂.
+4. If bonds are not drawn, add the **Create bonds** modifier. For the illustrative demo use a maximum H–H bond distance around `0.5` **reduced σ units** (the average model H–H bond length is `0.3σ`). In a calibrated Å trajectory, select a physically meaningful cutoff instead.
+5. Select atoms and bonds, choose colors/radii, and use OVITO's renderer to export pictures or animations.
+
+The built-in HTML viewer draws explicit H–H bonds without needing OVITO or any bond-guessing settings.
+
+## Scientific analysis
+
+The **molecular** center of mass of H₂, not an individual H atom, is analyzed for self-diffusion:
+
+$$\mathbf r_{\mathrm{COM}}(t) = \frac{m_H\mathbf r_{H_1}(t) + m_H\mathbf r_{H_2}(t)}{2m_H}.$$
+
+**Mean-squared displacement** (ensemble and time-origin average):
+
+$$\mathrm{MSD}(\tau) = \langle |\mathbf r_{\mathrm{COM}}(t+\tau)-\mathbf r_{\mathrm{COM}}(t)|^2\rangle.$$
+
+**Einstein self-diffusion coefficient** in three dimensions:
+
+$$D = \frac{1}{6}\,\frac{d\mathrm{MSD}(\tau)}{d\tau}$$
+
+Use **unwrapped** COM trajectories to avoid artificial jumps at periodic boundaries. The default fit window covers **40–85%** of the analyzed lag interval; this is a heuristic only. Check the diffusive regime, fit-window sensitivity, finite-size effects, energy conservation, convergence, and uncertainty from independent simulations.
+
+The RDF, `g(r)`, uses the *molecular COM positions*. The bond-length distribution instead measures explicit atomic distances inside each H₂ molecule. The built-in simulation uses reduced units for length `σ`, time `τ`, energy `ε` and temperature `ε/k_B`. There is **no justified conversion to Å, kelvin, or m²/s** without a validated parameter mapping.
+
+## Repository structure
+
+```text
+h2-molecular-dynamics-toolkit/
+├── src/h2md/
+│   ├── atomistic.py        # 2-H-atom flexible H2 MD + LAMMPS atomic reader
+│   ├── visualization.py    # H2 bonds, 3D stills, offline animation, XYZ
+│   ├── simulation.py       # Previous single-site LJ model
+│   ├── analysis.py         # COM MSD, diffusion, RDF and density
+│   ├── io.py               # COM trajectory import/export
+│   ├── cli.py              # Command-line interface
+│   └── ...
+├── tests/                 # 11 tests, including atomistic tests
+├── examples/atomistic-demo/  # Example outputs and 3D HTML
+├── assets/                # Screenshots/results shown in README
+├── .github/workflows/     # Continuous integration
+├── UPGRADE_WINDOWS.md     # How to update the existing GitHub repository
+├── pyproject.toml
+└── LICENSE
+```
+
+## Future milestones
+
+- Adopt a **validated molecular H₂ potential** and benchmark pressure/density/transport against reference data.
+- Support more general LAMMPS cell types and changing boxes, including NPT.
+- Support **rigid H₂** models, improved molecular rotational analysis, and quantum-aware interpretation.
+- Add independent-replica confidence intervals and longer-time diffusion convergence tests.
 
 ## References
 
-- [MDAnalysis: MSD analysis and unwrapped-coordinate requirement](https://docs.mdanalysis.org/stable/documentation_pages/analysis/msd.html)
-- [LAMMPS documentation: `dump`](https://docs.lammps.org/dump.html)
-- [LAMMPS documentation: `units`](https://docs.lammps.org/units.html)
+- [LAMMPS custom dump command (`id`, `mol`, `xu` etc.)](https://docs.lammps.org/dump.html)
+- [OVITO Create bonds modifier](https://www.ovito.org/manual/reference/pipelines/modifiers/create_bonds.html)
+- [OVITO extended XYZ reader](https://www.ovito.org/manual/reference/file_formats/input/xyz.html)
+- [MDAnalysis MSD documentation](https://docs.mdanalysis.org/stable/documentation_pages/analysis/msd.html)
 
-**Author:** Abdelateef M. Adam | [GitHub profile](https://github.com/Abdelateef13)  
+**Author:** Abdelateef M. Adam · [GitHub](https://github.com/Abdelateef13)  
 **License:** MIT
