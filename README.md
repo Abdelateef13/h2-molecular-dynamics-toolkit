@@ -172,3 +172,20 @@ h2-molecular-dynamics-toolkit/
 
 **Author:** Abdelateef M. Adam · [GitHub](https://github.com/Abdelateef13)  
 **License:** MIT
+
+
+## LAMMPS H₂ workflow (v0.3)
+
+The repository now includes a small **LAMMPS-to-Python workflow** in `lammps/`. It provides a Python geometry generator (`build_h2_data.py`), a ready-to-run LAMMPS input (`in.h2_demo`), and reproducible data with **32 H₂ molecules = 64 H atoms** in a periodic simulation box.
+
+```cmd
+cd lammps
+python build_h2_data.py
+lmp -in in.h2_demo
+cd ..
+h2md atomistic-analyze --input lammps/output/h2_atoms.lammpstrj --timestep-fs 0.1 --output results/from-lammps
+```
+
+The toolkit reads LAMMPS `id mol type xu yu zu` dumps, reconstructs **unwrapped H₂ centers of mass**, and generates molecular MSD, RDF, H–H bond statistics and interactive 3D visualization. See [Windows walkthrough](LAMMPS_WORKFLOW_WINDOWS.md).
+
+**Important:** The sample LAMMPS force field (harmonic bonds + H-site Lennard–Jones) is an **unvalidated educational example**. It is not suitable for quantitative hydrogen transport predictions. Scientific validation and longer, converged runs remain future work.

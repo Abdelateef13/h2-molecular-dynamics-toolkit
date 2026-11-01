@@ -1,0 +1,49 @@
+# H2 molecular dynamics with 2 explicit H atoms/molecule, teaching example
+# --------------------------------------------------------------------------
+# NOT a literature-validated hydrogen force field. Model: harmonic H-H bonds,
+# weak intermolecular H-site Lennard-Jones interactions. Real units; intended
+# to exercise LAMMPS -> h2md analysis -> OVITO/Plotly end to end.
+# Run in this folder: lmp -in in.h2_demo
+# The MOLECULE package must be available for bond_style harmonic.
+
+clear
+units           real                 # Å, fs, kcal/mol, K
+atom_style      molecular
+boundary        p p p
+bond_style      harmonic
+read_data       h2_system.data
+
+# Explicit H--H chemical bond, flexible dimer; LAMMPS E = K(r-r0)^2.
+# Constants chosen for stable teaching demonstration, not H2 validation.
+bond_coeff      1 350.0 0.7414       # kcal/mol/Å² and Å
+
+# H-site intermolecular LJ; intramolecular LJ MUST be excluded.
+pair_style      lj/cut 7.5
+pair_coeff      1 1 0.016 2.9 7.5   # epsilon (kcal/mol), sigma (Å), cutoff (Å)
+special_bonds   lj 0.0 0.0 0.0
+pair_modify     shift yes
+neighbor        1.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+# Keep a small integration timestep for light, flexible H--H bonds.
+timestep        0.1                  # fs
+velocity        all create 100.0 4928459 mom yes rot yes dist gaussian
+thermo_style    custom step temp pe ke etotal press
+thermo          1000
+
+# Short NVT equilibration at 100 K; thermostat damping in fs.
+fix             equilibrate all nvt temp 100.0 100.0 10.0
+run             10000                # 1 ps
+unfix           equilibrate
+
+# NVE production; output every 100 steps = every 10 fs.
+reset_timestep  0
+fix             production all nve
+
+shell           mkdir output
+dump            trajectory all custom 100 output/h2_atoms.lammpstrj id mol type xu yu zu
+dump_modify     trajectory sort id
+run             80000                # 8 ps production
+undump          trajectory
+unfix           production
+write_data      output/h2_final.data

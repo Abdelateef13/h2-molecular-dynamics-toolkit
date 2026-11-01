@@ -1,0 +1,4 @@
+# Trajectory dumps, logs, restarts, outputs can be large.
+output/
+log.lammps
+*.restart
