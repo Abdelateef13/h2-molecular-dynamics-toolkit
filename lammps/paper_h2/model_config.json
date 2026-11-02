@@ -1,0 +1,21 @@
+{
+  "source_doi": "10.1016/j.ijhydene.2024.06.319",
+  "H_site_sigma_angstrom": 2.72,
+  "H_site_epsilon_kcal_per_mol": 0.0199,
+  "H_site_charge_e": 0.0,
+  "LJ_cutoff_angstrom": 12.8,
+  "bond_length_angstrom_ASSUMED_not_from_paper": 0.7414,
+  "h_mass_g_per_mol_ASSUMED": 1.00794,
+  "molecules": 256,
+  "atoms": 512,
+  "init_box_angstrom": 48.51869778003297,
+  "init_box_assumption": "ideal gas PV=nRT, not hydrogen EOS",
+  "temperature_K": 323.15,
+  "pressure_MPa": 10.0,
+  "equilibration_ensemble": "NPT",
+  "production_ensemble": "NVT",
+  "equilibration_steps": 20000,
+  "production_steps": 50000,
+  "MD_timestep_fs": 1.0,
+  "warning": "Short demo runs cannot establish converged transport properties. Validate against experiments and independent replicas."
+}

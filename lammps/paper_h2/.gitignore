@@ -1,0 +1,5 @@
+# Generated simulation and analysis outputs
+output/
+# The input/data for a default reference case are reproducible; keep those tiny files tracked.
+__pycache__/
+*.pyc

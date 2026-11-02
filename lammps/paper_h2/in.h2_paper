@@ -1,0 +1,49 @@
+# H2 two-site LJ model; Adam et al., IJHE 78 (2024) 1344-1354
+# https://doi.org/10.1016/j.ijhydene.2024.06.319  Table 1 + Sec. 2.2
+# WARNING: H-H length 0.7414 A is assumed, NOT reported in Table 1.
+# NPT equilibration -> NVT diffusion sampling; NOT a complete reproduction
+# of the paper's NPT production/mixture simulations.
+# From this directory: lmp -in in.h2_paper
+clear
+units           real
+atom_style      molecular
+boundary        p p p
+read_data       h2_system.data
+
+# LJ site-site H2 parameters from Table 1; q(H2)=0 so no Coulomb style.
+pair_style      lj/cut 12.8000
+pair_coeff      1 1 0.0199 2.7200 12.8000
+pair_modify     shift no
+special_bonds   lj 0.0 0.0 0.0
+
+# Dummy harmonic stiffness provides equilibrium geometry to SHAKE.
+# H-H is CONSTRAINED by SHAKE in MD; 1000 is not a fitted bond constant.
+bond_style      harmonic
+bond_coeff      1 1000.0 0.7414
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+timestep        1.0         # fs
+thermo          500
+thermo_style    custom step time temp press density pe ke etotal vol lx ly lz
+thermo_modify   flush yes
+velocity        all create 323.1500 740127 mom yes rot yes dist gaussian
+
+# Nose-Hoover NPT to target P, T. Pressure in 'real' units is atm.
+fix             SH all shake 0.00001 200 0 b 1
+fix             EQ all npt temp 323.1500 323.1500 100.0 iso 98.6923267 98.6923267 1000.0
+run             20000
+unfix           EQ
+
+# Freeze the equilibrated volume by switching NPT to NVT for analysis.
+# Existing h2md reader requires a fixed cubic box during saved frames.
+reset_timestep  0
+fix             PROD all nvt temp 323.1500 323.1500 100.0
+shell           mkdir output
+dump            TR all custom 500 output/h2_paper.lammpstrj id mol type xu yu zu
+dump_modify     TR sort id
+run             50000
+undump          TR
+unfix           PROD
+unfix           SH
+write_data      output/h2_final.data

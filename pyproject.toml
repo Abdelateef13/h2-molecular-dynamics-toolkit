@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "h2-md-toolkit"
-version = "0.2.0"
-description = "Educational molecular H2 dynamics: coarse-grained and two-atom flexible dimer models"
+version = "0.4.0"
+description = "Hydrogen molecular dynamics: educational models and paper-based two-site LJ LAMMPS workflow"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
