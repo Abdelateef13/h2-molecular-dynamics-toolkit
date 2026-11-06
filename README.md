@@ -1,192 +1,159 @@
 # H₂ Molecular Dynamics Toolkit
 
 [![Python tests](https://github.com/Abdelateef13/h2-molecular-dynamics-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/Abdelateef13/h2-molecular-dynamics-toolkit/actions/workflows/tests.yml)
+![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Version 1.0](https://img.shields.io/badge/Version-1.0-informational)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
-**Python molecular-dynamics simulation and analysis for hydrogen**, including an explicit **two-hydrogen-atom-per-H₂** simulation, molecular diffusion analysis, H₂–H₂ radial distribution functions, 3D visualization, and import of two-atom H₂ LAMMPS dumps.
+**An end-to-end Python + LAMMPS framework for molecular simulation and analysis of hydrogen.** Configure experiments, generate two-site H₂ simulations, calculate molecular transport and structural properties, quantify uncertainty, and explore results in an interactive dashboard.
 
-![Actual 3D snapshot from atomistic demo](assets/h2_atomistic_3d.png)
+![Two-atom hydrogen molecules visualized from a simulated trajectory](assets/h2_atomistic_3d.png)
 
-### Scientific scope — important
+**[Quick start](#quick-start) · [Results](#example-benchmark) · [Workflow](#reproducible-lammps-workflow) · [Scientific model](#scientific-model-and-scope) · [Documentation](#documentation)**
 
-There are two different educational models in this repository:
+## What the toolkit does
 
-- **v0.2, `atomistic-demo`:** Two separately integrated H atoms per molecule, flexible **harmonic H–H bond**, **intermolecular** H-site Lennard–Jones interactions, 3D periodic box, velocity-Verlet time integration. Each H has mass `0.5` in reduced units. **This is atom-resolved but not a validated physical H₂ force field.** No H₂ dissociation, quantum nuclear vibrations, or accurate thermodynamic-state predictions are supported.
-- **v0.1, `demo`:** The original simplified single-site Lennard–Jones model in which each particle is an entire H₂ center of mass. Retained for comparison and teaching.
+| Component | Capabilities |
+|---|---|
+| **Simulation** | Generate LAMMPS inputs for rigid two-site H₂, with NPT equilibration, NVT production, SHAKE constraints, and independent seeds |
+| **Trajectory analysis** | Unwrapped molecular center-of-mass (COM) reconstruction, MSD and self-diffusion, H₂–H₂ RDF, bond-length diagnostics |
+| **Validation** | NPT density comparison with the CoolProp normal-hydrogen EOS, replicate statistics, 95% confidence intervals, convergence warnings |
+| **Visualization** | Interactive 3D molecule animation, MSD and density plots, finite-size comparison dashboard |
+| **Reproducibility** | JSON experiment configs, Python CLI, automated tests, versioned example analyses, machine-readable exports |
 
-**Do not report either demonstration's diffusion coefficients as physical H₂ transport coefficients.** Both built-in models use arbitrary reduced-unit parameters, not calibrated experimental or ab initio potentials. For quantitative results, analyze a validated hydrogen model and documented thermodynamic conditions (temperature, pressure, density) and establish convergence.
+```mermaid
+flowchart LR
+    A[JSON campaign] --> B[LAMMPS inputs]
+    B --> C[NPT equilibration]
+    C --> D[NVT production]
+    D --> E[Python analysis]
+    E --> F[Density / MSD / RDF]
+    E --> G[3D visualizations]
+    F --> H[Interactive dashboard]
+    G --> H
+```
 
-## New in v0.2
+## Example benchmark
 
-- Explicit **H₂ = H—H** molecular topology (32 molecules = 64 H atoms by default).
-- Harmonic intramolecular H–H bonding; no LJ interaction between the two atoms of the same molecule.
-- Periodic-boundary handling that preserves intact bonded molecules for visualization.
-- Interactive, **offline Plotly 3D HTML animation** (rotate, zoom, play/pause and scrub frames).
-- Static 3D molecular snapshot, H–H bond-length distribution and time series.
-- Molecular **COM** trajectory for MSD, self-diffusion, RDF, and density analysis.
-- Trajectories saved in atomic `.npz`, molecular-center `.npz`, and OVITO-compatible `.xyz` formats.
-- Import of **LAMMPS `dump custom` with `id mol xu yu zu`** for two-atom hydrogen molecules (constant cubic box, `units real`).
-- 11 automated Python tests and GitHub Actions CI.
+The following results were obtained from the repository owner's LAMMPS campaigns at **323.15 K and 10 MPa**, with **2 ns NPT + 3 ns NVT per independent replica**. The EOS reference is **7.1001 kg/m³**.
 
-## Example output
+| H₂ molecules | Replicas | MD density (kg/m³) | Density error vs EOS | Self-diffusion (10⁻⁶ m²/s) |
+|---:|---:|---:|---:|---:|
+| 256 | 5 | 7.1087 ± 0.0289 | +0.122% | 1.7417 ± 0.1472 |
+| 500 | 3 | 7.0885 ± 0.0502 | −0.163% | 1.7386 ± 0.2139 |
+| 864 | 3 | 7.0955 ± 0.0395 | −0.064% | 1.8264 ± 0.2263 |
 
-| Atomistic 3D H₂ molecules | Bond-length analysis |
-|:--:|:--:|
-| ![3D hydrogen molecules](assets/h2_atomistic_3d.png) | ![Bond statistics](assets/h2_bonds.png) |
+*All ± values are **95% confidence-interval half-widths across independent replicas**, not force-field accuracy bounds. The three sizes do not establish finite-size independence. Results are owner-reported and have not been independently reprocessed from raw trajectories in this distribution.*
 
-| Molecular MSD & RDF | Energy & temperature diagnostics |
-|:--:|:--:|
-| ![MSD RDF analysis](assets/h2_atomistic_analysis.png) | ![Energy traces](assets/h2_atomistic_diagnostics.png) |
+![Size comparison of H₂ self-diffusion with replicate-level confidence intervals](assets/h2_finite_size_diffusion.png)
 
-**[Open/download the interactive H₂ trajectory (HTML)](examples/atomistic-demo/h2_interactive.html)** — Download the file and open it in Chrome/Edge. It includes the visualization engine, so you can run it offline. The browser viewer shows atoms and bonds from the **actual computed trajectory** rather than an artistic illustration.
+**[Finite-size comparison report](portfolio_report/RESULTS.md)** · **[Download the interactive dashboard](portfolio_report/dashboard.html)** (save the HTML file and open it locally; GitHub does not run interactive HTML inside the README)
 
-## Quickstart (Windows)
+## Quick start
 
-Requirements: Python 3.10+ and a terminal. In the project folder:
+### Requirements
 
-```cmd
+- Python **3.10+**
+- [LAMMPS](https://www.lammps.org/) on `PATH` for running the physics-based H₂ campaigns (`lmp` executable; tested by the maintainer with LAMMPS 15 Jun 2023 on Windows)
+- No LAMMPS installation required to view existing analysis summaries or run the built-in educational demos
+
+From the **repository root** on Windows:
+
+```bat
 py -m venv .venv
 .venv\Scripts\activate.bat
-python -m pip install -e ".[dev]"
-```
-
-Run the new **explicit two-atom H₂ simulation**:
-
-```cmd
-h2md atomistic-demo --output results/atomistic
-```
-
-Open `results/atomistic/h2_interactive.html` by double-clicking it. Use the **Play** button, drag to rotate the box, scroll to zoom, or click the slider to inspect a frame.
-
-Test the project:
-
-```cmd
+python -m pip install -e ".[dev,validation]"
 python -m pytest -q
 ```
 
-Expected: **11 passed**. To update an existing v0.1 GitHub repository, follow **[UPGRADE_WINDOWS.md](UPGRADE_WINDOWS.md)** instead of creating a new repository.
-
-### Outputs of `atomistic-demo`
-
-| Output | Meaning |
-| --- | --- |
-| `h2_interactive.html` | Self-contained interactive 3D atom/bond animation |
-| `h2_atomistic_3d.png` | Static 3D snapshot with H–H bonds |
-| `h2_bonds.png` | Bond lengths vs time and bond-length histogram |
-| `h2_analysis.png` | Molecular-center MSD, diffusion fit, and H₂–H₂ COM RDF |
-| `h2_diagnostics.png` | Potential and kinetic energy; temperature vs time |
-| `atomic_trajectory.npz` | Unwrapped **atomic** H positions, `(frames, molecules, 2, 3)` |
-| `com_trajectory.npz` | Unwrapped **molecular COM** coordinates, `(frames, molecules, 3)` |
-| `h2_molecules.xyz` | Animated extended XYZ trajectory, supported by OVITO |
-| `msd.csv`, `rdf.csv` | Calculated numerical arrays |
-| `results.json` | Parameters, bond statistics, density, fitted diffusion and warnings |
-
-Change number of steps, equilibration, and random seed:
-
-```cmd
-h2md atomistic-demo --equil 600 --steps 5000 --seed 7 --output results/longer-run
-```
-
-## Analyze actual two-atom H₂ trajectories from LAMMPS
-
-A molecular H₂ system should have **two hydrogen atoms per molecule**, with a stable `mol` ID per bonded pair. Write a *custom* dump in a production LAMMPS run:
-
-```lammps
-# Example output directive to add to an otherwise configured H2 LAMMPS input
-# units real => coordinates in Å; timestep in fs.
-dump d1 all custom 100 h2_atoms.lammpstrj id mol type xu yu zu
-dump_modify d1 sort id
-```
-
-Analyze if the MD timestep is **0.5 fs** (replace it with your actual value):
-
-```cmd
-h2md atomistic-analyze --input h2_atoms.lammpstrj --timestep-fs 0.5 --output results/from-lammps
-```
-
-This reconstructs molecular **unwrapped center-of-mass positions** and generates the same diffusion, RDF, and 3D visualization output. The example does **not** supply a validated LAMMPS H₂ force field or claim to generate publishable hydrogen MD simulations. It is an *analysis/import* workflow; use scientifically supported force-field parameters and equilibrated trajectories.
-
-Current importer limitations: **constant cubic orthorhombic box**, consistent atom and molecule IDs, two H atoms per molecule, and uniform frame spacing. **NPT, triclinic boxes, and different atomic species are not yet supported.** Keep atomic unwrapped image flags consistent with the molecular topology.
-
-## Explore XYZ with OVITO
-
-1. Download/install [OVITO Basic](https://www.ovito.org/).
-2. Use **File → Load File** to open `results/atomistic/h2_molecules.xyz`.
-3. Click Play to animate. The file contains two `H` atoms and a molecule identifier for each H₂.
-4. If bonds are not drawn, add the **Create bonds** modifier. For the illustrative demo use a maximum H–H bond distance around `0.5` **reduced σ units** (the average model H–H bond length is `0.3σ`). In a calibrated Å trajectory, select a physically meaningful cutoff instead.
-5. Select atoms and bonds, choose colors/radii, and use OVITO's renderer to export pictures or animations.
-
-The built-in HTML viewer draws explicit H–H bonds without needing OVITO or any bond-guessing settings.
-
-## Scientific analysis
-
-The **molecular** center of mass of H₂, not an individual H atom, is analyzed for self-diffusion:
-
-$$\mathbf r_{\mathrm{COM}}(t) = \frac{m_H\mathbf r_{H_1}(t) + m_H\mathbf r_{H_2}(t)}{2m_H}.$$
-
-**Mean-squared displacement** (ensemble and time-origin average):
-
-$$\mathrm{MSD}(\tau) = \langle |\mathbf r_{\mathrm{COM}}(t+\tau)-\mathbf r_{\mathrm{COM}}(t)|^2\rangle.$$
-
-**Einstein self-diffusion coefficient** in three dimensions:
-
-$$D = \frac{1}{6}\,\frac{d\mathrm{MSD}(\tau)}{d\tau}$$
-
-Use **unwrapped** COM trajectories to avoid artificial jumps at periodic boundaries. The default fit window covers **40–85%** of the analyzed lag interval; this is a heuristic only. Check the diffusive regime, fit-window sensitivity, finite-size effects, energy conservation, convergence, and uncertainty from independent simulations.
-
-The RDF, `g(r)`, uses the *molecular COM positions*. The bond-length distribution instead measures explicit atomic distances inside each H₂ molecule. The built-in simulation uses reduced units for length `σ`, time `τ`, energy `ε` and temperature `ε/k_B`. There is **no justified conversion to Å, kelvin, or m²/s** without a validated parameter mapping.
-
-## Repository structure
-
-```text
-h2-molecular-dynamics-toolkit/
-├── src/h2md/
-│   ├── atomistic.py        # 2-H-atom flexible H2 MD + LAMMPS atomic reader
-│   ├── visualization.py    # H2 bonds, 3D stills, offline animation, XYZ
-│   ├── simulation.py       # Previous single-site LJ model
-│   ├── analysis.py         # COM MSD, diffusion, RDF and density
-│   ├── io.py               # COM trajectory import/export
-│   ├── cli.py              # Command-line interface
-│   └── ...
-├── tests/                 # 11 tests, including atomistic tests
-├── examples/atomistic-demo/  # Example outputs and 3D HTML
-├── assets/                # Screenshots/results shown in README
-├── .github/workflows/     # Continuous integration
-├── UPGRADE_WINDOWS.md     # How to update the existing GitHub repository
-├── pyproject.toml
-└── LICENSE
-```
-
-## Future milestones
-
-- Adopt a **validated molecular H₂ potential** and benchmark pressure/density/transport against reference data.
-- Support more general LAMMPS cell types and changing boxes, including NPT.
-- Support **rigid H₂** models, improved molecular rotational analysis, and quantum-aware interpretation.
-- Add independent-replica confidence intervals and longer-time diffusion convergence tests.
-
-## References
-
-- [LAMMPS custom dump command (`id`, `mol`, `xu` etc.)](https://docs.lammps.org/dump.html)
-- [OVITO Create bonds modifier](https://www.ovito.org/manual/reference/pipelines/modifiers/create_bonds.html)
-- [OVITO extended XYZ reader](https://www.ovito.org/manual/reference/file_formats/input/xyz.html)
-- [MDAnalysis MSD documentation](https://docs.mdanalysis.org/stable/documentation_pages/analysis/msd.html)
-
-**Author:** Abdelateef M. Adam · [GitHub](https://github.com/Abdelateef13)  
-**License:** MIT
-## Version 0.4 — Published H₂ two-site force field (LAMMPS)
-
-A reproducible **H₂-only** simulation workflow using the two-site H₂ nonbonded parameters reported in [Adam et al., International Journal of Hydrogen Energy 78 (2024), 1344–1354](https://doi.org/10.1016/j.ijhydene.2024.06.319), Table 1.
-
-- H-site LJ **σ = 2.7200 Å**, **ε = 0.0199 kcal/mol**, charge = 0; cutoff **12.8 Å**, timestep **1 fs**.
-- Explicit 2-site H₂ molecules with a **fixed 0.7414 Å H–H bond (assumption, not in source Table 1)** using LAMMPS SHAKE.
-- Short **NPT preparation → NVT production**; the ensemble and demo durations differ from the source paper and must not be treated as a strict reproduction.
-- Postprocessing generates center-of-mass MSD/diffusion and RDF, H–H bond statistics, interactive HTML, and an OVITO-compatible trajectory.
-- Includes validation checks and tests. See [v0.4 Windows guide](UPGRADE_TO_V0.4_WINDOWS.md), [parameter provenance](docs/PAPER_H2_FORCEFIELD.md), and [LAMMPS input](lammps/paper_h2/in.h2_paper).
+Generate an interactive two-atom **educational** H₂ demonstration:
 
 ```bat
-cd lammps\paper_h2
-python build_h2_paper.py
-lmp -in in.h2_paper
-python postprocess.py
+h2md atomistic-demo --output results/atomistic
+start results\atomistic\h2_interactive.html
 ```
 
-This is a model *based on published nonbonded parameters*, not a benchmarked prediction of pure-H₂ thermodynamic or transport properties. Run longer simulations, multiple seeds, and independent validation before scientific interpretation.
+Generate a dashboard from previously analyzed LAMMPS runs (no new simulation required):
+
+```bat
+h2md-workflow dashboard --analyses lammps\paper_h2\validation_v05\analysis_research lammps\paper_h2\validation_v05\analysis_500 lammps\paper_h2\validation_v05\analysis_864 --out portfolio_report
+start portfolio_report\dashboard.html
+```
+
+Those three `analysis_*` directories must exist locally for the command above. To explore a packaged example instead, use the summaries in `examples/owner_reported_summaries/analysis_*`:
+
+```bat
+h2md-workflow dashboard --analyses examples\owner_reported_summaries\analysis_research examples\owner_reported_summaries\analysis_500 examples\owner_reported_summaries\analysis_864 --out portfolio_report
+```
+
+## Reproducible LAMMPS workflow
+
+A campaign can be defined in a single JSON file, with temperature, pressure, cell count, sampling duration and random seeds. The supplied [example campaign](examples/campaigns/h2_baseline.json) demonstrates three molecular system sizes.
+
+```bat
+REM 1. Generate all inputs, without running LAMMPS
+h2md-workflow plan --config examples\campaigns\h2_baseline.json --campaign campaigns\baseline
+
+REM 2. Execute the prepared jobs (LAMMPS required)
+h2md-workflow run --campaign campaigns\baseline --lmp lmp
+
+REM 3. Analyze all completed runs
+h2md-workflow analyze --campaign campaigns\baseline
+
+REM 4. Generate comparison dashboard
+h2md-workflow dashboard --analyses campaigns\baseline\h2_256\analysis campaigns\baseline\h2_500\analysis campaigns\baseline\h2_864\analysis --out portfolio_report
+```
+
+The workflow preserves run metadata and avoids overwriting a nonempty campaign directory. Large trajectory outputs are excluded from Git through `.gitignore`.
+
+## Scientific model and scope
+
+The LAMMPS hydrogen workflow uses the **two-site H₂ Lennard–Jones parameters** reported by Adam *et al.* (2024), Table 1:
+
+| Site parameter | Value |
+|---|---:|
+| σ | 2.7200 Å |
+| ε | 0.0199 kcal/mol |
+| Charge | 0 e |
+| LJ cutoff | 12.8 Å |
+| H–H separation | 0.7414 Å — **separately assumed rigid-bond approximation** |
+
+NPT equilibration provides density; NVT production provides unwrapped H₂ COM trajectories for Einstein self-diffusion:
+
+$$D = \frac{1}{6} \frac{d}{dt} \left\langle |\mathbf{R}_{\mathrm{COM}}(t+t_0)-\mathbf{R}_{\mathrm{COM}}(t_0)|^2 \right\rangle.$$
+
+**Interpretation limits:** The paper supplies the nonbonded LJ parameters, not the rigid-bond parameterization used in this implementation. The model is classical and does not explicitly reproduce nuclear quantum effects. Good density agreement at one state is not validation of self-diffusion across all conditions. The 95% CIs quantify between-replica variability, not systematic potential, thermostat, fitting, or box-size bias. The included `h2md demo` and `h2md atomistic-demo` modes are separate **educational reduced-unit models**, not quantitative H₂ force-field calculations.
+
+## Repository layout
+
+```text
+src/h2md/                       Python simulation, analysis and workflow modules
+lammps/paper_h2/                Paper-based two-site H₂ LAMMPS inputs
+lammps/paper_h2/validation_v05/ Independent replicas, EOS benchmark and diffusion
+examples/campaigns/            JSON campaign configurations
+examples/atomistic-demo/       3D demonstration and example outputs
+tests/                         Unit and workflow regression tests
+assets/                        Molecular visualizations and benchmark figures
+portfolio_report/              Example dashboard and comparison exports
+docs/                          Architecture and model documentation
+```
+
+## Documentation
+
+- [Architecture and workflow design](docs/FINAL_FRAMEWORK.md)
+- [Force-field provenance and assumptions](docs/PAPER_H2_FORCEFIELD.md)
+- [Density and self-diffusion analysis](lammps/paper_h2/validation_v05/README.md)
+- [Changelog](CHANGELOG.md)
+- [Citing this software](CITATION.cff)
+
+## Roadmap
+
+- More flexible LAMMPS trajectory import (additional box types and dump conventions)
+- Configurable analysis modules and export options
+- Extendible model support for additional gases and liquids, with model-specific force fields and validation
+
+## Reference and citation
+
+**Force-field source:** Adam, A. M., Bahamon, D., Al Kobaisi, M., & Vega, L. F. (2024). *Molecular dynamics simulations of the interfacial tension and the solubility of brine/H₂/CO₂ systems: Implications for underground hydrogen storage*. **International Journal of Hydrogen Energy, 78**, 1344–1354. [https://doi.org/10.1016/j.ijhydene.2024.06.319](https://doi.org/10.1016/j.ijhydene.2024.06.319).
+
+This repository is licensed under the [MIT License](LICENSE). For software attribution, see [`CITATION.cff`](CITATION.cff).

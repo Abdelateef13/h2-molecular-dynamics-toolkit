@@ -118,8 +118,8 @@ thermo_modify   flush yes
 velocity        all create {temp_kelvin:.4f} 740127 mom yes rot yes dist gaussian
 
 # Nose-Hoover NPT to target P, T. Pressure in 'real' units is atm.
-fix             EQ all npt temp {temp_kelvin:.4f} {temp_kelvin:.4f} 100.0 iso {atm:.7f} {atm:.7f} 1000.0
 fix             SH all shake 0.00001 200 0 b 1
+fix             EQ all npt temp {temp_kelvin:.4f} {temp_kelvin:.4f} 100.0 iso {atm:.7f} {atm:.7f} 1000.0
 run             {eq_steps}
 unfix           EQ
 

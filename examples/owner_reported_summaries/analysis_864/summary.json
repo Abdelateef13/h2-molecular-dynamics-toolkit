@@ -1,0 +1,18 @@
+{
+  "molecules": 864,
+  "temperature_K_target": 323.15,
+  "pressure_MPa_target": 10.0,
+  "density_reference_target_kg_m3": 7.100073004037176,
+  "density_kg_m3": {
+    "mean": 7.095519830084958,
+    "ci95_half_width": 0.039457080034330065,
+    "n": 3
+  },
+  "diffusion_m2_s": {
+    "mean": 1.8263645574112507e-06,
+    "ci95_half_width": 2.2630891026908139e-07,
+    "n": 3
+  },
+  "density_relative_error_percent_at_target": -0.06412855120826455,
+  "warnings": []
+}

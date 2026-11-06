@@ -1,0 +1,53 @@
+[
+  {
+    "name": "analysis_research",
+    "molecules": 256,
+    "replicas": 5,
+    "temperature_K": 323.15,
+    "pressure_MPa": 10.0,
+    "density_kg_m3": 7.108703780109946,
+    "density_ci95_half_width": 0.02890431770430687,
+    "reference_density_kg_m3": 7.100073004037176,
+    "density_error_percent": 0.12155897647618819,
+    "diffusion_m2_s": 1.7416905669419638e-06,
+    "diffusion_ci95_half_width": 1.4720270774055195e-07,
+    "diffusion_1e6_m2_s": 1.7416905669419638,
+    "diffusion_ci95_1e6_m2_s": 0.14720270774055194,
+    "n_warnings": 0,
+    "source_file": "lammps\\paper_h2\\validation_v05\\analysis_research\\summary.json"
+  },
+  {
+    "name": "analysis_500",
+    "molecules": 500,
+    "replicas": 3,
+    "temperature_K": 323.15,
+    "pressure_MPa": 10.0,
+    "density_kg_m3": 7.088470124937531,
+    "density_ci95_half_width": 0.050172208741135295,
+    "reference_density_kg_m3": 7.100073004037176,
+    "density_error_percent": -0.1634191520713646,
+    "diffusion_m2_s": 1.738554919437308e-06,
+    "diffusion_ci95_half_width": 2.1386700838559414e-07,
+    "diffusion_1e6_m2_s": 1.738554919437308,
+    "diffusion_ci95_1e6_m2_s": 0.21386700838559414,
+    "n_warnings": 0,
+    "source_file": "lammps\\paper_h2\\validation_v05\\analysis_500\\summary.json"
+  },
+  {
+    "name": "analysis_864",
+    "molecules": 864,
+    "replicas": 3,
+    "temperature_K": 323.15,
+    "pressure_MPa": 10.0,
+    "density_kg_m3": 7.095519830084958,
+    "density_ci95_half_width": 0.039457080034330065,
+    "reference_density_kg_m3": 7.100073004037176,
+    "density_error_percent": -0.06412855120826455,
+    "diffusion_m2_s": 1.8263645574112507e-06,
+    "diffusion_ci95_half_width": 2.2630891026908139e-07,
+    "diffusion_1e6_m2_s": 1.8263645574112506,
+    "diffusion_ci95_1e6_m2_s": 0.2263089102690814,
+    "n_warnings": 0,
+    "source_file": "lammps\\paper_h2\\validation_v05\\analysis_864\\summary.json"
+  }
+]

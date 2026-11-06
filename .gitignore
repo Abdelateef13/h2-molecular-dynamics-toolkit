@@ -11,3 +11,21 @@ venv/
 .ipynb_checkpoints/
 results/
 !assets/
+
+# Independent simulation outputs (v0.5)
+runs_v05/
+runs_smoke/
+runs_standard/
+runs_research/
+analysis_v05/
+analysis_smoke/
+analysis_standard/
+analysis_research/
+analysis_altwindow/
+
+# Version 1.0 campaign-generated raw data (keep only small summaries/reports in Git)
+campaigns/
+**/runs_*/
+**/seed_*/output/
+*.lammpstrj
+*.lammpstrj.gz

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "h2-md-toolkit"
-version = "0.4.0"
+version = "1.0.0"
 description = "Hydrogen molecular dynamics: educational models and paper-based two-site LJ LAMMPS workflow"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -15,9 +15,11 @@ keywords = ["molecular-dynamics", "hydrogen", "diffusion", "radial-distribution-
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5"]
+validation = ["CoolProp>=6.6", "scipy>=1.10"]
 
 [project.scripts]
 h2md = "h2md.cli:main"
+h2md-workflow = "h2md.workflow:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

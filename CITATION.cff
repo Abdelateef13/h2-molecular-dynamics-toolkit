@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the repository and the force-field source where relevant."
+title: "H2 Molecular Dynamics Toolkit"
+type: software
+authors:
+  - family-names: Adam
+    given-names: Abdelateef M.
+version: 1.0.0
+license: MIT
+url: "https://github.com/Abdelateef13/h2-molecular-dynamics-toolkit"
+date-released: 2026-11-03
+references:
+  - type: article
+    title: "Molecular dynamics simulations of the interfacial tension and the solubility of brine/H2/CO2 systems: Implications for underground hydrogen storage"
+    authors:
+      - family-names: Adam
+        given-names: Abdelateef M.
+      - family-names: Bahamon
+        given-names: Daniel
+      - family-names: Al Kobaisi
+        given-names: Mohammed
+      - family-names: Vega
+        given-names: Lourdes F.
+    doi: 10.1016/j.ijhydene.2024.06.319
+    year: 2024

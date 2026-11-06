@@ -8,7 +8,7 @@ from .atomistic import (AtomicH2Trajectory, simulate_atomistic_h2,
                         load_atomistic_lammps_dump, save_atomistic_trajectory,
                         load_atomistic_trajectory)
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 __all__ = ["Trajectory", "simulate_h2_centers", "mean_squared_displacement",
            "fit_self_diffusion", "radial_distribution", "number_density",
            "load_trajectory", "save_trajectory", "load_lammps_dump",
